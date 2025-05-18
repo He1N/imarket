@@ -1,5 +1,6 @@
 <?php include 'check.php'; ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -45,10 +46,12 @@
                             <div class="card-header">
                                 <h3 class="card-title">Products List</h3>
                             </div>
-                             <!-- /Boton Agregar -->
-                            <div class="card-header d-flex justify-content-between align-items-center">
+                             <!-- /Boton Agregar y editar-->
+                            <div class="card-header d-flex justify-content">
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">Add Product</button>
+                                <button class="btn btn-warning" data-toggle="modal" data-target="#editProductModal">Editar Producto</button>
                             </div>
+                            
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <table id="example2" class="table table-bordered table-hover">
@@ -141,6 +144,8 @@
             window.location.href = "change_status.php?userId=" + userId + "&newStatus=" + newStatus + "&userrole=user";
         }
     </script>
+    
+
   <!--Modal Add Products -->
 <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
@@ -158,6 +163,129 @@
   </div>
 </div>
 
+<!-- Modal para editar -->
+<div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <form id="editProductForm" method="POST" action="edit_product.php">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Producto</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Selección de producto -->
+          <div class="form-group">
+            <label for="selectProduct">Selecciona un producto</label>
+            <select class="form-control" id="selectProduct">
+              <option value="">-- Selecciona --</option>
+              <?php
+              // Asume que tienes una variable $productos con todos los productos
+                $productos = $query->custom("
+                    SELECT 
+                        products.id, 
+                        products.name, 
+                        products.price_old, 
+                        products.price_current, 
+                        products.description, 
+                        products.rating, 
+                        products.quantity, 
+                        products.category_id, 
+                        c.category_name
+                    FROM products
+                    JOIN categories c ON products.category_id = c.id
+                ");
+                foreach ($productos as $producto) {
+                    echo '<option value="' . $producto['id'] . '" 
+                        data-name="' . htmlspecialchars($producto['name']) . '" 
+                        data-price_old="' . $producto['price_old'] . '" 
+                        data-price_current="' . $producto['price_current'] . '" 
+                        data-description="' . htmlspecialchars($producto['description']) . '" 
+                        data-rating="' . $producto['rating'] . '" 
+                        data-quantity="' . $producto['quantity'] . '" 
+                        data-category_id="' . $producto['category_id'] . '">'
+                        . htmlspecialchars($producto['name']) . ' (' . htmlspecialchars($producto['category_name']) . ')'
+                        . '</option>';
+                }
+              ?>
+            </select>
+          </div>
+
+          <!-- Campos editables -->
+          <input type="hidden" name="id" id="editProductId">
+
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="name" class="form-control" id="editName">
+          </div>
+
+          <div class="form-group">
+            <label>Precio anterior</label>
+            <input type="text" name="price_old" class="form-control" id="editPriceOld">
+          </div>
+
+          <div class="form-group">
+            <label>Precio actual</label>
+            <input type="text" name="price_current" class="form-control" id="editPriceCurrent">
+          </div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="description" class="form-control" id="editDescription"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Rating</label>
+            <input type="number" name="rating" class="form-control" id="editRating">
+          </div>
+
+          <div class="form-group">
+            <label>Cantidad</label>
+            <input type="number" name="quantity" class="form-control" id="editQuantity">
+          </div>
+
+          <div class="form-group">
+            <label>Categoría</label>
+            <select name="category_id" id="editCategory" class="form-control">
+                <option value="">-- Selecciona una categoría --</option>
+                <?php
+                // Suponiendo que tienes un array $categorias con id y nombre de cada categoría
+                $categorias = $query->custom("SELECT id,category_name FROM categories");
+                foreach ($categorias as $cat) {
+                    echo '<option value="' . $cat['id'] . '">' . htmlspecialchars($cat['category_name']) . '</option>';
+                }
+                ?>
+            </select>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Guardar cambios</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+    document.getElementById('selectProduct').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+
+        if (selected.value !== "") {
+            document.getElementById('editProductId').value = selected.value;
+            document.getElementById('editName').value = selected.getAttribute('data-name');
+            document.getElementById('editPriceOld').value = selected.getAttribute('data-price_old');
+            document.getElementById('editPriceCurrent').value = selected.getAttribute('data-price_current');
+            document.getElementById('editDescription').value = selected.getAttribute('data-description');
+            document.getElementById('editRating').value = selected.getAttribute('data-rating');
+            document.getElementById('editQuantity').value = selected.getAttribute('data-quantity');
+            document.getElementById('editCategory').value = selected.getAttribute('data-category_id');
+        }
+    });
+    </script>
 </body>
 
 </html>

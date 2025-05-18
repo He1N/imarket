@@ -22,7 +22,7 @@
         <!-- Main Sidebar Container -->
         <?php
         include 'includes/aside.php';
-        active('users', 'users');
+        active('products', 'products');
         ?>
 
         <!-- Content Wrapper. Contains page content -->
@@ -34,7 +34,7 @@
                 ["title" => "Home", "url" => "/"],
                 ["title" => "Products", "url" => "#"],
             );
-            pagePath('Users', $arr);
+            pagePath('Products', $arr);
             ?>
 
             <section class="content">                  
@@ -54,6 +54,7 @@
                                 <table id="example2" class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
+                                            <th>Image</th>
                                             <th>Product</th>
                                             <th>Price Old</th>
                                             <th>Price Current</th>
@@ -65,10 +66,26 @@
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $data = $query->select('products', 'id, name, price_old, price_current, description, rating, quantity, added_to_site');
+                                         $data = $query->custom("SELECT 
+                                            p.id, 
+                                            p.name, 
+                                            p.price_old, 
+                                            p.price_current, 
+                                            p.description, 
+                                            p.rating, 
+                                            p.quantity, 
+                                            p.added_to_site, 
+                                            pi.image_url 
+                                        FROM products p 
+                                        LEFT JOIN (
+                                            SELECT product_id, image_url 
+                                            FROM product_images 
+                                            GROUP BY product_id
+                                        ) pi ON pi.product_id = p.id");
 
                                         foreach ($data as $row) {
                                             echo '<tr>';
+                                            echo '<td><img src="/imarket/src/images/products/' . $row['image_url'] . '" alt="product image" style="width: 60px; height: auto;"></td>';
                                             echo '<td>' . $row['name'] . '</td>';
                                             echo '<td>' . $row['price_old'] . '</td>';
                                             echo '<td>' . $row['price_current'] . '</td>';
@@ -113,7 +130,7 @@
                 "searching": true,
                 "ordering": true,
                 "info": true,
-                "autoWidth": false,
+                "autoWidth": true,
                 "responsive": true,
             });
         });

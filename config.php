@@ -48,6 +48,16 @@ class Database
         $sql = "SELECT $columns FROM $table $condition";
         return $this->executeQuery($sql)->fetch_all(MYSQLI_ASSOC);
     }
+    
+    public function custom($sql)
+    {
+        return $this->executeQuery($sql)->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getLastInsertId()
+    {
+        return $this->conn->insert_id;
+    }
 
     public function insert($table, $data)
     {
